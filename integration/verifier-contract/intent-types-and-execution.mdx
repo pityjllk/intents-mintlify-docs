@@ -88,6 +88,33 @@ The nonce is a 256-bit (32-byte) value encoded as base64. It must be unique per 
 The salt rotates periodically. Always fetch the current salt before constructing intents. See the [nonce documentation](https://github.com/near/intents/tree/main/defuse#nonces) for implementation details.
 </Info>
 
+<Tip>
+You can fetch the current salt in two ways:
+
+1. **Via [`simulate_intents`](/integration/verifier-contract/simulating-intents)** — the response includes the current salt alongside simulation results.
+
+2. **Directly via `current_salt`** — a dedicated view method on the Verifier contract:
+
+```bash cURL
+curl -s <NEAR_RPC_URL> \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jsonrpc": "2.0",
+    "id": "dontcare",
+    "method": "query",
+    "params": {
+      "request_type": "call_function",
+      "finality": "final",
+      "account_id": "intents.near",
+      "method_name": "current_salt",
+      "args_base64": "e30="
+    }
+  }' | jq -r '.result.result | implode'
+```
+
+The response is a hex string representing the 4-byte salt prefix, for example `"252812b3"`.
+</Tip>
+U
 ## Signed intent format
 
 To create a valid, signed intent for the `execute_intents` function, wrap the payload in a message string and sign it. See [Signing Intents](/integration/verifier-contract/signing-intents) for supported signature types (NEP-413, ERC-191, WebAuthn, and more). Note that the message is the same JSON serialized as a one-liner with escaped quotes:
